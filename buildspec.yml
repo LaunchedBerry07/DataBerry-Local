@@ -1,18 +1,24 @@
 version: 0.2
 
 phases:
+  install:
+    commands:
+      # Install Node.js version 18 in the build environment
+      - n 18
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 351556823156.dkr.ecr.us-east-1.amazonaws.com
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin [ACCOUNT_ID].dkr.ecr.amazonaws.com
   build:
     commands:
-      - echo Build started on `date`
-      - echo Building the Docker image...
+      - echo Installing dependencies...
+      - npm install
+      - echo Building application artifacts...
+      - npm run build
+      - echo Building the lean Docker image...
       - docker build -t gmail-finance-manager .
-      - docker tag gmail-finance-manager:latest 351556823156.dkr.ecr.us-east-1.amazonaws.com/gmail-finance-manager:latest
+      - docker tag gmail-finance-manager:latest [ACCOUNT_ID].dkr.ecr.amazonaws.com/gmail-finance-manager:latest
   post_build:
     commands:
-      - echo Build completed on `date`
-      - echo Pushing the Docker image...
-      - docker push 351556823156.dkr.ecr.us-east-1.amazonaws.com/gmail-finance-manager:latest
+      - echo Pushing the Docker image to Amazon ECR...
+      - docker push [ACCOUNT_ID].dkr.ecr.amazonaws.com/gmail-finance-manager:latest
